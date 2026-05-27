@@ -1,0 +1,452 @@
+{
+  "meta": {
+    "title": "Kubernetes Error Reference",
+    "description": "Structured reference of Kubernetes pod states, node conditions, deployment errors, and fixes.",
+    "version": "1.0.0",
+    "updated": "2026-05-26",
+    "source": "Swift Tech Co. — https://swifttechco.com",
+    "total": 44
+  },
+  "errors": [
+    {
+      "code": "CrashLoopBackOff",
+      "name": "Container Crash Loop",
+      "category": "Pod",
+      "severity": "high",
+      "resource": "Pod",
+      "cause": "The container starts, crashes, is restarted by Kubernetes, crashes again, and so on. Kubernetes applies exponential backoff between restarts (10s, 20s, 40s... up to 5 minutes).",
+      "fix": "Check logs from the last crash: `kubectl logs <pod> --previous`. Describe the pod: `kubectl describe pod <pod>`. Common causes: application startup failure, missing env vars, missing config, bad entrypoint command.",
+      "tags": ["pod", "restart", "crash"]
+    },
+    {
+      "code": "ImagePullBackOff",
+      "name": "Image Pull Back Off",
+      "category": "Pod",
+      "severity": "high",
+      "resource": "Pod",
+      "cause": "Kubernetes cannot pull the container image. Kubernetes retries with exponential backoff after repeated failures.",
+      "fix": "Verify the image name and tag. Check registry credentials: `kubectl get secret <secret>`. Create an imagePullSecret if using a private registry. Check registry availability from the node.",
+      "tags": ["pod", "image", "registry", "pull"]
+    },
+    {
+      "code": "ErrImagePull",
+      "name": "Image Pull Error",
+      "category": "Pod",
+      "severity": "high",
+      "resource": "Pod",
+      "cause": "Initial failure to pull the image before backoff kicks in. Image name typo, tag not found, or auth failure.",
+      "fix": "Run `kubectl describe pod <pod>` for the exact error. Test the pull manually on the node. Verify registry credentials and imagePullPolicy.",
+      "tags": ["pod", "image", "registry"]
+    },
+    {
+      "code": "OOMKilled",
+      "name": "Out of Memory Killed",
+      "category": "Pod",
+      "severity": "high",
+      "resource": "Pod / Container",
+      "cause": "The container exceeded its memory limit and was killed by the Linux OOM killer. The container's `resources.limits.memory` was hit.",
+      "fix": "Increase memory limits in the pod spec. Profile the application for memory leaks. Set realistic `requests` and `limits`. Check `kubectl describe pod <pod>` for `OOMKilled: true` and `Reason: OOMKilled`.",
+      "tags": ["pod", "memory", "oom", "resources"]
+    },
+    {
+      "code": "Evicted",
+      "name": "Pod Evicted",
+      "category": "Pod",
+      "severity": "high",
+      "resource": "Pod",
+      "cause": "The node ran out of resources (disk, memory, PID) and Kubernetes evicted pods to reclaim resources. Pods without requests/limits or those below the QoS threshold are evicted first.",
+      "fix": "Set `resources.requests` and `resources.limits` on all containers. Increase node capacity. Check node disk pressure: `kubectl describe node <node>`. Clean up old logs and unused images on nodes.",
+      "tags": ["pod", "eviction", "node", "resources"]
+    },
+    {
+      "code": "Pending",
+      "name": "Pod Stuck in Pending",
+      "category": "Pod",
+      "severity": "medium",
+      "resource": "Pod",
+      "cause": "Kubernetes cannot schedule the pod. Common causes: insufficient resources on any node, node selectors or affinity rules cannot be satisfied, taints without tolerations, PVC not bound.",
+      "fix": "Run `kubectl describe pod <pod>` and look at Events. Check node capacity: `kubectl describe nodes`. Verify node selectors, affinity, and taints match available nodes.",
+      "tags": ["pod", "scheduling", "resources", "affinity"]
+    },
+    {
+      "code": "CreateContainerConfigError",
+      "name": "Container Config Error",
+      "category": "Pod",
+      "severity": "high",
+      "resource": "Pod",
+      "cause": "Kubernetes cannot create the container due to a misconfiguration. Usually a missing Secret, ConfigMap, or invalid volume mount.",
+      "fix": "Run `kubectl describe pod <pod>`. Check that referenced Secrets and ConfigMaps exist in the same namespace: `kubectl get secret,configmap -n <namespace>`.",
+      "tags": ["pod", "configuration", "secret", "configmap"]
+    },
+    {
+      "code": "RunContainerError",
+      "name": "Run Container Error",
+      "category": "Pod",
+      "severity": "high",
+      "resource": "Pod",
+      "cause": "Container started but failed immediately, often due to a bad command, missing binary, or wrong working directory.",
+      "fix": "Check `kubectl describe pod <pod>` for the specific error. Verify the container command and entrypoint in the pod spec against what the image provides.",
+      "tags": ["pod", "entrypoint", "command"]
+    },
+    {
+      "code": "InvalidImageName",
+      "name": "Invalid Image Name",
+      "category": "Pod",
+      "severity": "medium",
+      "resource": "Pod",
+      "cause": "The image name in the pod spec is malformed (e.g. contains uppercase, invalid characters, or a bad registry URL format).",
+      "fix": "Correct the image name in the deployment/pod spec. Image names must be lowercase. Validate: `docker pull <image>` locally.",
+      "tags": ["pod", "image", "naming"]
+    },
+    {
+      "code": "PostStartHookError",
+      "name": "PostStart Lifecycle Hook Error",
+      "category": "Pod",
+      "severity": "medium",
+      "resource": "Pod",
+      "cause": "The postStart lifecycle hook command failed. Kubernetes blocks the container from reaching Running state until the hook completes.",
+      "fix": "Debug the hook command in `kubectl describe pod`. Run the command manually in a test container. Ensure the hook is idempotent and handles race conditions with container startup.",
+      "tags": ["pod", "lifecycle", "hook"]
+    },
+    {
+      "code": "PreStopHookError",
+      "name": "PreStop Hook Timeout",
+      "category": "Pod",
+      "severity": "low",
+      "resource": "Pod",
+      "cause": "The preStop hook ran for longer than `terminationGracePeriodSeconds` and was killed before completing.",
+      "fix": "Increase `terminationGracePeriodSeconds`. Optimize the preStop hook to complete quickly. Ensure graceful shutdown is handled in the application itself, using preStop only for coordination.",
+      "tags": ["pod", "lifecycle", "graceful-shutdown"]
+    },
+    {
+      "code": "NotReady",
+      "name": "Node Not Ready",
+      "category": "Node",
+      "severity": "high",
+      "resource": "Node",
+      "cause": "The node is unhealthy and not accepting workloads. Causes include kubelet crash, network partition, disk pressure, memory pressure, or PID pressure.",
+      "fix": "SSH to the node and check kubelet: `systemctl status kubelet`. Check node conditions: `kubectl describe node <node>`. Drain and cordon the node if needed: `kubectl drain <node> --ignore-daemonsets`.",
+      "tags": ["node", "kubelet", "health"]
+    },
+    {
+      "code": "DiskPressure",
+      "name": "Node Disk Pressure",
+      "category": "Node",
+      "severity": "high",
+      "resource": "Node",
+      "cause": "Available disk space on the node is below the threshold (default: 10% or 100Mi free). Kubernetes will start evicting pods.",
+      "fix": "SSH to the node and free disk space. Remove unused container images: `crictl rmi --prune`. Clean up old logs. Increase node disk size. Set `evictionHard` thresholds in kubelet config.",
+      "tags": ["node", "disk", "eviction"]
+    },
+    {
+      "code": "MemoryPressure",
+      "name": "Node Memory Pressure",
+      "category": "Node",
+      "severity": "high",
+      "resource": "Node",
+      "cause": "Available memory on the node is below the eviction threshold. Kubernetes will start evicting BestEffort and Burstable pods.",
+      "fix": "Check memory usage on the node. Review pod resource requests and limits. Move pods with high memory usage to larger nodes. Add more nodes to the cluster.",
+      "tags": ["node", "memory", "eviction"]
+    },
+    {
+      "code": "PIDPressure",
+      "name": "Node PID Pressure",
+      "category": "Node",
+      "severity": "high",
+      "resource": "Node",
+      "cause": "The number of processes on the node is approaching the system PID limit. Can be caused by fork bombs, runaway processes, or too many containers.",
+      "fix": "Identify runaway processes: `ps aux --sort=-%cpu | head`. Set PID limits per pod: `resources.limits.ephemeral-storage`. Increase system PID limits: `kernel.pid_max` sysctl.",
+      "tags": ["node", "pid", "processes"]
+    },
+    {
+      "code": "NetworkNotReady",
+      "name": "Node Network Not Ready",
+      "category": "Node",
+      "severity": "high",
+      "resource": "Node",
+      "cause": "The CNI (Container Network Interface) plugin is not running or failed. Pods cannot get IP addresses.",
+      "fix": "Check CNI pod logs: `kubectl logs -n kube-system <cni-pod>`. Restart the CNI daemonset. Verify CNI binary is installed on the node at `/opt/cni/bin/`.",
+      "tags": ["node", "network", "cni"]
+    },
+    {
+      "code": "DeploymentProgressDeadlineExceeded",
+      "name": "Deployment Progress Deadline Exceeded",
+      "category": "Deployment",
+      "severity": "high",
+      "resource": "Deployment",
+      "cause": "The deployment did not make progress within `progressDeadlineSeconds` (default: 600s). New pods are not becoming Ready.",
+      "fix": "Check pod status: `kubectl get pods`. Describe the deployment: `kubectl describe deployment <name>`. Look for failed pod events. Check image, resources, and readiness probes.",
+      "tags": ["deployment", "rollout", "progress"]
+    },
+    {
+      "code": "ReplicaSetFailed",
+      "name": "ReplicaSet Failed to Create Pods",
+      "category": "Deployment",
+      "severity": "high",
+      "resource": "ReplicaSet",
+      "cause": "The ReplicaSet controller cannot create pods. Common causes: resource quota exceeded, RBAC missing, invalid pod spec.",
+      "fix": "Check ReplicaSet events: `kubectl describe rs <name>`. Check namespace resource quotas: `kubectl describe resourcequota -n <namespace>`.",
+      "tags": ["deployment", "replicaset", "quota"]
+    },
+    {
+      "code": "HorizontalPodAutoscalerUnableToScale",
+      "name": "HPA Cannot Scale",
+      "category": "Scaling",
+      "severity": "medium",
+      "resource": "HorizontalPodAutoscaler",
+      "cause": "HPA cannot scale because: metrics server is not installed, the deployment is missing resource requests (required for CPU-based scaling), or max replicas is already reached.",
+      "fix": "Install metrics-server. Set `resources.requests.cpu` on the container. Check HPA status: `kubectl describe hpa <name>`. Increase `maxReplicas` if needed.",
+      "tags": ["scaling", "hpa", "metrics-server"]
+    },
+    {
+      "code": "ServiceEndpointsNotReady",
+      "name": "Service Has No Endpoints",
+      "category": "Service",
+      "severity": "high",
+      "resource": "Service",
+      "cause": "The Service selector does not match any running pod labels, or all matched pods are not Ready.",
+      "fix": "Check endpoints: `kubectl get endpoints <service>`. Verify pod labels match the service selector: `kubectl get pods --show-labels`. Check pod readiness probes.",
+      "tags": ["service", "endpoints", "selector", "labels"]
+    },
+    {
+      "code": "ServiceLoadBalancerPending",
+      "name": "LoadBalancer External IP Pending",
+      "category": "Service",
+      "severity": "medium",
+      "resource": "Service",
+      "cause": "A Service of type LoadBalancer has been created but no external IP is assigned. The cloud provider controller has not provisioned a load balancer.",
+      "fix": "Verify the cloud controller manager is running. Check service events: `kubectl describe service <name>`. On local clusters (kind, minikube) use NodePort or a tool like MetalLB.",
+      "tags": ["service", "loadbalancer", "cloud"]
+    },
+    {
+      "code": "IngressBackendNotFound",
+      "name": "Ingress Backend Service Not Found",
+      "category": "Networking",
+      "severity": "high",
+      "resource": "Ingress",
+      "cause": "The Ingress resource references a backend Service that does not exist or has the wrong port.",
+      "fix": "Verify the service name and port in the Ingress spec match an existing Service: `kubectl get svc -n <namespace>`. Check ingress controller logs.",
+      "tags": ["ingress", "networking", "service"]
+    },
+    {
+      "code": "DNSResolutionFailure",
+      "name": "CoreDNS Resolution Failure",
+      "category": "Networking",
+      "severity": "high",
+      "resource": "Pod / CoreDNS",
+      "cause": "Pods cannot resolve DNS names. CoreDNS may be crashed, misconfigured, or a network policy is blocking DNS traffic.",
+      "fix": "Check CoreDNS pods: `kubectl get pods -n kube-system -l k8s-app=kube-dns`. Test DNS from a pod: `kubectl exec <pod> -- nslookup kubernetes.default`. Check NetworkPolicy for port 53 blocking.",
+      "tags": ["networking", "dns", "coredns"]
+    },
+    {
+      "code": "NetworkPolicyBlocking",
+      "name": "NetworkPolicy Blocking Traffic",
+      "category": "Networking",
+      "severity": "medium",
+      "resource": "NetworkPolicy",
+      "cause": "A NetworkPolicy is blocking traffic between pods or from pods to external services. Once any NetworkPolicy selects a pod, all traffic not explicitly allowed is denied.",
+      "fix": "Review NetworkPolicy rules: `kubectl get networkpolicy -n <namespace>`. Test with a temporary allow-all policy. Use `kubectl describe networkpolicy` to see selectors and rules.",
+      "tags": ["networking", "networkpolicy", "security"]
+    },
+    {
+      "code": "PVCPending",
+      "name": "PersistentVolumeClaim Stuck Pending",
+      "category": "Storage",
+      "severity": "high",
+      "resource": "PersistentVolumeClaim",
+      "cause": "No PersistentVolume matches the PVC (access mode, storage class, size). Or the StorageClass provisioner is not running.",
+      "fix": "Check PVC status: `kubectl describe pvc <name>`. List available PVs: `kubectl get pv`. Verify StorageClass exists and provisioner is running: `kubectl get storageclass`.",
+      "tags": ["storage", "pvc", "pv", "storageclass"]
+    },
+    {
+      "code": "PVCLost",
+      "name": "PersistentVolumeClaim Lost",
+      "category": "Storage",
+      "severity": "critical",
+      "resource": "PersistentVolumeClaim",
+      "cause": "The underlying PersistentVolume was deleted or became unavailable while the claim was still in use. Often caused by manually deleting PVs.",
+      "fix": "This may result in data loss. Restore the volume from backup if available. Never manually delete PVs that are bound to PVCs. Use `reclaimPolicy: Retain` on StorageClasses for critical data.",
+      "tags": ["storage", "pvc", "data-loss"]
+    },
+    {
+      "code": "SecretNotFound",
+      "name": "Secret Not Found",
+      "category": "Configuration",
+      "severity": "high",
+      "resource": "Secret",
+      "cause": "A pod, deployment, or ingress references a Secret that does not exist in the same namespace.",
+      "fix": "Create the missing secret: `kubectl create secret generic <name> --from-literal=key=value -n <namespace>`. Verify namespace: `kubectl get secrets -n <namespace>`.",
+      "tags": ["configuration", "secret", "namespace"]
+    },
+    {
+      "code": "ConfigMapNotFound",
+      "name": "ConfigMap Not Found",
+      "category": "Configuration",
+      "severity": "high",
+      "resource": "ConfigMap",
+      "cause": "A pod spec references a ConfigMap that does not exist in the same namespace.",
+      "fix": "Create the ConfigMap: `kubectl create configmap <name> --from-file=config.yaml -n <namespace>`. Use `kubectl get configmap -n <namespace>` to verify.",
+      "tags": ["configuration", "configmap", "namespace"]
+    },
+    {
+      "code": "RBACForbidden",
+      "name": "RBAC Permission Denied",
+      "category": "RBAC",
+      "severity": "medium",
+      "resource": "ServiceAccount / Role / ClusterRole",
+      "cause": "A pod or user is attempting an API action they do not have permission for. The ServiceAccount lacks the required Role or ClusterRole binding.",
+      "fix": "Check RBAC: `kubectl auth can-i <verb> <resource> --as=system:serviceaccount:<namespace>:<sa>`. Create a Role and RoleBinding granting the required permissions.",
+      "tags": ["rbac", "permissions", "serviceaccount"]
+    },
+    {
+      "code": "ServiceAccountNotFound",
+      "name": "ServiceAccount Not Found",
+      "category": "RBAC",
+      "severity": "medium",
+      "resource": "ServiceAccount",
+      "cause": "The pod spec references a ServiceAccount that does not exist in the namespace.",
+      "fix": "Create the ServiceAccount: `kubectl create serviceaccount <name> -n <namespace>`. Or set `serviceAccountName: default` to use the default account.",
+      "tags": ["rbac", "serviceaccount"]
+    },
+    {
+      "code": "PodSecurityPolicyViolation",
+      "name": "Pod Security Admission Violation",
+      "category": "Security",
+      "severity": "medium",
+      "resource": "Pod",
+      "cause": "The pod spec violates the Pod Security Standards policy enforced on the namespace (e.g. requesting privileged mode, hostNetwork, or running as root in a restricted namespace).",
+      "fix": "Check namespace labels: `kubectl get namespace <ns> --show-labels`. Adjust pod spec to comply with the policy (remove privileged, set runAsNonRoot, set seccompProfile). Or relax the namespace policy.",
+      "tags": ["security", "psa", "pod-security"]
+    },
+    {
+      "code": "ReadinessProbeFailure",
+      "name": "Readiness Probe Failing",
+      "category": "Pod",
+      "severity": "medium",
+      "resource": "Pod / Container",
+      "cause": "The readiness probe is failing, so the pod is excluded from Service endpoints. The container is running but not passing health checks.",
+      "fix": "Check probe configuration in `kubectl describe pod`. Test the probe endpoint manually from inside the pod: `kubectl exec <pod> -- curl localhost:<port>/health`. Increase `initialDelaySeconds` if the app takes time to start.",
+      "tags": ["pod", "readiness", "probe", "health"]
+    },
+    {
+      "code": "LivenessProbeFailure",
+      "name": "Liveness Probe Failing",
+      "category": "Pod",
+      "severity": "high",
+      "resource": "Pod / Container",
+      "cause": "The liveness probe is failing, causing Kubernetes to restart the container. The application may have deadlocked or stopped responding.",
+      "fix": "Inspect pod events: `kubectl describe pod`. Check if the probe threshold is too aggressive. Test the probe endpoint: `kubectl exec <pod> -- curl localhost:<port>/live`. Increase `failureThreshold` or `timeoutSeconds`.",
+      "tags": ["pod", "liveness", "probe", "restart"]
+    },
+    {
+      "code": "StartupProbeFailure",
+      "name": "Startup Probe Failing",
+      "category": "Pod",
+      "severity": "medium",
+      "resource": "Pod / Container",
+      "cause": "The startup probe did not succeed within `failureThreshold * periodSeconds`. Kubernetes kills the container before it finishes initializing.",
+      "fix": "Increase `failureThreshold` or `periodSeconds` on the startup probe to give the app more time. Check application startup logs: `kubectl logs <pod>`.",
+      "tags": ["pod", "startup", "probe"]
+    },
+    {
+      "code": "ResourceQuotaExceeded",
+      "name": "Resource Quota Exceeded",
+      "category": "Configuration",
+      "severity": "medium",
+      "resource": "ResourceQuota",
+      "cause": "Creating or updating resources in the namespace would exceed the configured ResourceQuota (CPU, memory, pod count, service count, etc.).",
+      "fix": "Check quota usage: `kubectl describe resourcequota -n <namespace>`. Delete unused resources or increase quota. Ensure all pods have resource requests set (required for quota enforcement).",
+      "tags": ["configuration", "quota", "resources"]
+    },
+    {
+      "code": "LimitRangeViolation",
+      "name": "LimitRange Violation",
+      "category": "Configuration",
+      "severity": "medium",
+      "resource": "LimitRange",
+      "cause": "A pod or container is requesting resources outside the range defined by a LimitRange in the namespace.",
+      "fix": "Check LimitRange: `kubectl describe limitrange -n <namespace>`. Adjust container resource requests and limits to fall within the defined min/max values.",
+      "tags": ["configuration", "limitrange", "resources"]
+    },
+    {
+      "code": "StatefulSetRollingUpdateStuck",
+      "name": "StatefulSet Rolling Update Stuck",
+      "category": "StatefulSet",
+      "severity": "high",
+      "resource": "StatefulSet",
+      "cause": "A StatefulSet rolling update is stuck because a pod is not becoming Ready (often due to PVC issues, readiness probe failures, or anti-affinity blocking scheduling).",
+      "fix": "Check the stuck pod: `kubectl describe pod <statefulset>-<ordinal>`. StatefulSets update in reverse ordinal order and will not proceed past a stuck pod. Fix the underlying pod issue.",
+      "tags": ["statefulset", "rollout", "update"]
+    },
+    {
+      "code": "JobBackoffLimitExceeded",
+      "name": "Job Backoff Limit Exceeded",
+      "category": "Job",
+      "severity": "high",
+      "resource": "Job",
+      "cause": "All Job pods failed and the retry limit (`backoffLimit`) has been reached. Kubernetes stops retrying.",
+      "fix": "Check failed pod logs: `kubectl logs <job-pod>`. Fix the underlying issue and recreate the Job. Increase `backoffLimit` if transient failures are expected.",
+      "tags": ["job", "failure", "retry"]
+    },
+    {
+      "code": "CronJobMissed",
+      "name": "CronJob Missed Schedule",
+      "category": "CronJob",
+      "severity": "medium",
+      "resource": "CronJob",
+      "cause": "The CronJob missed its scheduled execution window. This can happen if the controller was down or if a previous job run took longer than the scheduled interval.",
+      "fix": "Check `startingDeadlineSeconds` on the CronJob. Set `concurrencyPolicy: Forbid` to prevent overlapping runs. Verify the CronJob schedule with a cron expression validator.",
+      "tags": ["cronjob", "scheduling"]
+    },
+    {
+      "code": "IngressTLSCertNotFound",
+      "name": "Ingress TLS Certificate Secret Not Found",
+      "category": "Networking",
+      "severity": "high",
+      "resource": "Ingress",
+      "cause": "The Ingress TLS section references a Secret that does not exist or has not yet been provisioned by cert-manager.",
+      "fix": "Check cert-manager Certificate resources: `kubectl get certificate -n <namespace>`. Describe the Certificate to see provisioning errors. Manually create the Secret if cert-manager is not being used.",
+      "tags": ["ingress", "tls", "cert-manager", "certificate"]
+    },
+    {
+      "code": "EtcdQuorumLost",
+      "name": "etcd Quorum Lost",
+      "category": "Control Plane",
+      "severity": "critical",
+      "resource": "etcd",
+      "cause": "More than half of etcd members are unavailable, causing the cluster to become read-only. The API server cannot write state.",
+      "fix": "This is a critical control plane failure. Restore etcd from a snapshot. For a 3-node cluster, losing 2 nodes loses quorum. Always run etcd with an odd number of members (3 or 5).",
+      "tags": ["control-plane", "etcd", "quorum", "critical"]
+    },
+    {
+      "code": "APIServerUnreachable",
+      "name": "API Server Unreachable",
+      "category": "Control Plane",
+      "severity": "critical",
+      "resource": "kube-apiserver",
+      "cause": "The Kubernetes API server is down or unreachable. kubectl commands fail with connection refused or timeout errors.",
+      "fix": "Check API server pod: `kubectl get pods -n kube-system` (if possible). SSH to control plane node: `docker ps | grep apiserver` or `crictl ps | grep apiserver`. Check logs and restart if needed.",
+      "tags": ["control-plane", "apiserver", "critical"]
+    },
+    {
+      "code": "SchedulerUnhealthy",
+      "name": "kube-scheduler Unhealthy",
+      "category": "Control Plane",
+      "severity": "high",
+      "resource": "kube-scheduler",
+      "cause": "The scheduler pod is crashed or leader election failed. New pods will stay in Pending state indefinitely.",
+      "fix": "Check scheduler pod: `kubectl get pods -n kube-system -l component=kube-scheduler`. Restart the scheduler pod. Check leader election: `kubectl get lease -n kube-system`.",
+      "tags": ["control-plane", "scheduler"]
+    },
+    {
+      "code": "ControllerManagerUnhealthy",
+      "name": "kube-controller-manager Unhealthy",
+      "category": "Control Plane",
+      "severity": "high",
+      "resource": "kube-controller-manager",
+      "cause": "The controller manager is not running. Deployments, ReplicaSets, DaemonSets, and Jobs will not reconcile.",
+      "fix": "Check controller-manager pod: `kubectl get pods -n kube-system -l component=kube-controller-manager`. Restart the pod. Check logs for certificate or RBAC issues.",
+      "tags": ["control-plane", "controller-manager"]
+    }
+  ]
+}
