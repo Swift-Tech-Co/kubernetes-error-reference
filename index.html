@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kubernetes Error Reference</title>
+<meta name="description" content="Structured reference of Kubernetes pod states, node conditions, deployment errors, and fixes.">
+<meta property="og:title" content="Kubernetes Error Reference">
+<meta property="og:description" content="Structured reference of Kubernetes pod states, node conditions, deployment errors, and fixes.">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://swifttechco.com/services/digital/hosting-maintenance">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#0d0d1a;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.6;min-height:100vh}
+a{color:#D4A843;text-decoration:none}a:hover{text-decoration:underline}
+img{max-width:100%}
+nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(13,13,26,0.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(212,168,67,0.15);height:60px;display:flex;align-items:center;padding:0 24px;gap:20px}
+nav .logo{font-weight:800;font-size:15px;color:#fff;white-space:nowrap}
+nav .logo span{color:#D4A843}
+nav .spacer{flex:1}
+nav a.nav-link{font-size:13px;color:rgba(255,255,255,0.6);font-weight:600}
+nav a.nav-link:hover{color:#fff;text-decoration:none}
+nav a.cta-btn{font-size:12px;font-weight:700;padding:7px 18px;border-radius:8px;background:#D4A843;color:#000;white-space:nowrap}
+nav a.cta-btn:hover{text-decoration:none;opacity:0.9}
+.hero{padding:100px 24px 56px;max-width:900px;margin:0 auto;text-align:center}
+.hero .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.3);border-radius:100px;padding:5px 16px;margin-bottom:24px;font-size:11px;font-weight:700;color:#D4A843;letter-spacing:0.12em;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,5vw,46px);font-weight:900;color:#fff;line-height:1.1;margin-bottom:16px;letter-spacing:-0.02em}
+.hero .sub{font-size:16px;color:rgba(255,255,255,0.55);max-width:600px;margin:0 auto 32px;line-height:1.7}
+.hero .actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:#D4A843;color:#000;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:800;text-decoration:none}
+.btn-primary:hover{text-decoration:none;opacity:0.9}
+.btn-secondary{display:inline-flex;align-items:center;gap:8px;background:transparent;color:#fff;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;border:1px solid rgba(255,255,255,0.15);text-decoration:none}
+.btn-secondary:hover{background:rgba(255,255,255,0.06);text-decoration:none}
+.section{max-width:960px;margin:0 auto;padding:48px 24px}
+.section-title{font-size:clamp(18px,3vw,26px);font-weight:800;color:#fff;margin-bottom:8px}
+.section-sub{font-size:14px;color:rgba(255,255,255,0.45);margin-bottom:32px}
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:28px}
+.gold{color:#D4A843}
+.rating-bar{display:flex;gap:4px;align-items:center}
+.rating-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dot-fill{background:#D4A843}
+.dot-empty{background:rgba(255,255,255,0.12)}
+footer{border-top:1px solid rgba(255,255,255,0.07);padding:32px 24px;text-align:center}
+footer p{font-size:13px;color:rgba(255,255,255,0.35)}
+footer a{color:#D4A843}
+@media(max-width:600px){nav .nav-link{display:none}.section{padding:32px 16px}.hero{padding:80px 16px 40px}}
+
+.search-bar{width:100%;padding:12px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#fff;font-size:14px;outline:none;margin-bottom:16px}
+.search-bar::placeholder{color:rgba(255,255,255,0.3)}
+.search-bar:focus{border-color:rgba(212,168,67,0.4)}
+.cat-btn{padding:5px 14px;border-radius:100px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s}
+.cat-btn:hover,.cat-btn.active{background:rgba(212,168,67,0.15);border-color:rgba(212,168,67,0.4);color:#D4A843}
+.cat-btn.all-btn.active{background:rgba(212,168,67,0.15);border-color:rgba(212,168,67,0.4);color:#D4A843}
+.error-table{width:100%;border-collapse:collapse;font-size:13px}
+.error-table th{font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.1em;padding:10px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.08)}
+.error-table td{padding:12px 12px;vertical-align:top;border-bottom:1px solid rgba(255,255,255,0.05)}
+.error-table tr:hover td{background:rgba(255,255,255,0.025)}
+code{font-family:"JetBrains Mono",monospace;font-size:11px;background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;color:rgba(255,255,255,0.7)}
+.count{font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="https://swifttechco.com">Swift <span>Tech Co.</span></a>
+  <span class="spacer"></span>
+  <a class="nav-link" href="https://swifttechco.com/tools">Free Tools</a>
+  <a class="nav-link" href="https://swifttechco.com/blog">Blog</a>
+  <a class="cta-btn" href="https://swifttechco.com/services/digital/hosting-maintenance" target="_blank" rel="noopener">Full Analysis &rarr;</a>
+</nav>
+<div class="hero">
+  <div class="badge">Error Reference</div>
+  <h1>Kubernetes Error Reference</h1>
+  <p class="sub">Structured reference of Kubernetes pod states, node conditions, deployment errors, and fixes.</p>
+  <div class="actions">
+    <a class="btn-primary" href="https://swifttechco.com/services/digital/hosting-maintenance" target="_blank" rel="noopener">Kubernetes and Cloud Services &rarr;</a>
+    <a class="btn-secondary" href="https://swifttechco.com/tools" target="_blank" rel="noopener">Free Tools</a>
+  </div>
+</div>
+
+<div class="section">
+  <div class="card" style="padding:20px 24px">
+    <input class="search-bar" type="search" placeholder="Search errors, codes, causes, fixes..." id="searchInput" oninput="doSearch()">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="cat-btn all-btn active" data-cat="all" onclick="filterCat(this)">All (44)</button>
+      <button class="cat-btn" data-cat="configuration" onclick="filterCat(this)">Configuration</button>
+<button class="cat-btn" data-cat="control plane" onclick="filterCat(this)">Control Plane</button>
+<button class="cat-btn" data-cat="cronjob" onclick="filterCat(this)">CronJob</button>
+<button class="cat-btn" data-cat="deployment" onclick="filterCat(this)">Deployment</button>
+<button class="cat-btn" data-cat="job" onclick="filterCat(this)">Job</button>
+<button class="cat-btn" data-cat="networking" onclick="filterCat(this)">Networking</button>
+<button class="cat-btn" data-cat="node" onclick="filterCat(this)">Node</button>
+<button class="cat-btn" data-cat="pod" onclick="filterCat(this)">Pod</button>
+<button class="cat-btn" data-cat="rbac" onclick="filterCat(this)">RBAC</button>
+<button class="cat-btn" data-cat="scaling" onclick="filterCat(this)">Scaling</button>
+<button class="cat-btn" data-cat="security" onclick="filterCat(this)">Security</button>
+<button class="cat-btn" data-cat="service" onclick="filterCat(this)">Service</button>
+<button class="cat-btn" data-cat="statefulset" onclick="filterCat(this)">StatefulSet</button>
+<button class="cat-btn" data-cat="storage" onclick="filterCat(this)">Storage</button>
+    </div>
+    <div class="count" id="countLabel">44 errors</div>
+    <div style="overflow-x:auto">
+      <table class="error-table" id="errorTable">
+        <thead><tr>
+          <th>Error</th>
+          <th>Category</th>
+          <th>Cause</th>
+          <th>Fix</th>
+          
+        </tr></thead>
+        <tbody id="errorBody">
+          <tr data-cat="pod" data-search="crashloopbackoff container crash loop the container starts, crashes, is restarted by kubernetes, crashes again, and so on. kubernetes applies exponential backoff between restarts (10s, 20s, 40s... up to 5 minutes). check logs from the last crash: `kubectl logs <pod> --previous`. describe the pod: `kubectl describe pod <pod>`. common causes: application startup failure, missing env vars, missing config, bad entrypoint command. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Container Crash Loop</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The container starts, crashes, is restarted by Kubernetes, crashes again, and so on. Kubernetes applies exponential backoff between restarts (10s, 20s, 40s... up to 5 minutes).</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check logs from the last crash: `kubectl logs <pod> --previous`. Describe the pod: `kubectl describe pod <pod>`. Common causes: application startup failure, missing env vars, missing config, bad entrypoint command.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="imagepullbackoff image pull back off kubernetes cannot pull the container image. kubernetes retries with exponential backoff after repeated failures. verify the image name and tag. check registry credentials: `kubectl get secret <secret>`. create an imagepullsecret if using a private registry. check registry availability from the node. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Image Pull Back Off</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">Kubernetes cannot pull the container image. Kubernetes retries with exponential backoff after repeated failures.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Verify the image name and tag. Check registry credentials: `kubectl get secret <secret>`. Create an imagePullSecret if using a private registry. Check registry availability from the node.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="errimagepull image pull error initial failure to pull the image before backoff kicks in. image name typo, tag not found, or auth failure. run `kubectl describe pod <pod>` for the exact error. test the pull manually on the node. verify registry credentials and imagepullpolicy. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Image Pull Error</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">Initial failure to pull the image before backoff kicks in. Image name typo, tag not found, or auth failure.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Run `kubectl describe pod <pod>` for the exact error. Test the pull manually on the node. Verify registry credentials and imagePullPolicy.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="oomkilled out of memory killed the container exceeded its memory limit and was killed by the linux oom killer. the container's `resources.limits.memory` was hit. increase memory limits in the pod spec. profile the application for memory leaks. set realistic `requests` and `limits`. check `kubectl describe pod <pod>` for `oomkilled: true` and `reason: oomkilled`. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Out of Memory Killed</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The container exceeded its memory limit and was killed by the Linux OOM killer. The container's `resources.limits.memory` was hit.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Increase memory limits in the pod spec. Profile the application for memory leaks. Set realistic `requests` and `limits`. Check `kubectl describe pod <pod>` for `OOMKilled: true` and `Reason: OOMKilled`.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="evicted pod evicted the node ran out of resources (disk, memory, pid) and kubernetes evicted pods to reclaim resources. pods without requests/limits or those below the qos threshold are evicted first. set `resources.requests` and `resources.limits` on all containers. increase node capacity. check node disk pressure: `kubectl describe node <node>`. clean up old logs and unused images on nodes. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Pod Evicted</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The node ran out of resources (disk, memory, PID) and Kubernetes evicted pods to reclaim resources. Pods without requests/limits or those below the QoS threshold are evicted first.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Set `resources.requests` and `resources.limits` on all containers. Increase node capacity. Check node disk pressure: `kubectl describe node <node>`. Clean up old logs and unused images on nodes.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="pending pod stuck in pending kubernetes cannot schedule the pod. common causes: insufficient resources on any node, node selectors or affinity rules cannot be satisfied, taints without tolerations, pvc not bound. run `kubectl describe pod <pod>` and look at events. check node capacity: `kubectl describe nodes`. verify node selectors, affinity, and taints match available nodes. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Pod Stuck in Pending</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">Kubernetes cannot schedule the pod. Common causes: insufficient resources on any node, node selectors or affinity rules cannot be satisfied, taints without tolerations, PVC not bound.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Run `kubectl describe pod <pod>` and look at Events. Check node capacity: `kubectl describe nodes`. Verify node selectors, affinity, and taints match available nodes.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="createcontainerconfigerror container config error kubernetes cannot create the container due to a misconfiguration. usually a missing secret, configmap, or invalid volume mount. run `kubectl describe pod <pod>`. check that referenced secrets and configmaps exist in the same namespace: `kubectl get secret,configmap -n <namespace>`. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Container Config Error</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">Kubernetes cannot create the container due to a misconfiguration. Usually a missing Secret, ConfigMap, or invalid volume mount.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Run `kubectl describe pod <pod>`. Check that referenced Secrets and ConfigMaps exist in the same namespace: `kubectl get secret,configmap -n <namespace>`.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="runcontainererror run container error container started but failed immediately, often due to a bad command, missing binary, or wrong working directory. check `kubectl describe pod <pod>` for the specific error. verify the container command and entrypoint in the pod spec against what the image provides. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Run Container Error</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">Container started but failed immediately, often due to a bad command, missing binary, or wrong working directory.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check `kubectl describe pod <pod>` for the specific error. Verify the container command and entrypoint in the pod spec against what the image provides.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="invalidimagename invalid image name the image name in the pod spec is malformed (e.g. contains uppercase, invalid characters, or a bad registry url format). correct the image name in the deployment/pod spec. image names must be lowercase. validate: `docker pull <image>` locally. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Invalid Image Name</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The image name in the pod spec is malformed (e.g. contains uppercase, invalid characters, or a bad registry URL format).</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Correct the image name in the deployment/pod spec. Image names must be lowercase. Validate: `docker pull <image>` locally.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="poststarthookerror poststart lifecycle hook error the poststart lifecycle hook command failed. kubernetes blocks the container from reaching running state until the hook completes. debug the hook command in `kubectl describe pod`. run the command manually in a test container. ensure the hook is idempotent and handles race conditions with container startup. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">PostStart Lifecycle Hook Error</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The postStart lifecycle hook command failed. Kubernetes blocks the container from reaching Running state until the hook completes.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Debug the hook command in `kubectl describe pod`. Run the command manually in a test container. Ensure the hook is idempotent and handles race conditions with container startup.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="prestophookerror prestop hook timeout the prestop hook ran for longer than `terminationgraceperiodseconds` and was killed before completing. increase `terminationgraceperiodseconds`. optimize the prestop hook to complete quickly. ensure graceful shutdown is handled in the application itself, using prestop only for coordination. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">PreStop Hook Timeout</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The preStop hook ran for longer than `terminationGracePeriodSeconds` and was killed before completing.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Increase `terminationGracePeriodSeconds`. Optimize the preStop hook to complete quickly. Ensure graceful shutdown is handled in the application itself, using preStop only for coordination.</td>
+  
+</tr>
+<tr data-cat="node" data-search="notready node not ready the node is unhealthy and not accepting workloads. causes include kubelet crash, network partition, disk pressure, memory pressure, or pid pressure. ssh to the node and check kubelet: `systemctl status kubelet`. check node conditions: `kubectl describe node <node>`. drain and cordon the node if needed: `kubectl drain <node> --ignore-daemonsets`. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Node Not Ready</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Node</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The node is unhealthy and not accepting workloads. Causes include kubelet crash, network partition, disk pressure, memory pressure, or PID pressure.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">SSH to the node and check kubelet: `systemctl status kubelet`. Check node conditions: `kubectl describe node <node>`. Drain and cordon the node if needed: `kubectl drain <node> --ignore-daemonsets`.</td>
+  
+</tr>
+<tr data-cat="node" data-search="diskpressure node disk pressure available disk space on the node is below the threshold (default: 10% or 100mi free). kubernetes will start evicting pods. ssh to the node and free disk space. remove unused container images: `crictl rmi --prune`. clean up old logs. increase node disk size. set `evictionhard` thresholds in kubelet config. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Node Disk Pressure</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Node</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">Available disk space on the node is below the threshold (default: 10% or 100Mi free). Kubernetes will start evicting pods.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">SSH to the node and free disk space. Remove unused container images: `crictl rmi --prune`. Clean up old logs. Increase node disk size. Set `evictionHard` thresholds in kubelet config.</td>
+  
+</tr>
+<tr data-cat="node" data-search="memorypressure node memory pressure available memory on the node is below the eviction threshold. kubernetes will start evicting besteffort and burstable pods. check memory usage on the node. review pod resource requests and limits. move pods with high memory usage to larger nodes. add more nodes to the cluster. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Node Memory Pressure</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Node</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">Available memory on the node is below the eviction threshold. Kubernetes will start evicting BestEffort and Burstable pods.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check memory usage on the node. Review pod resource requests and limits. Move pods with high memory usage to larger nodes. Add more nodes to the cluster.</td>
+  
+</tr>
+<tr data-cat="node" data-search="pidpressure node pid pressure the number of processes on the node is approaching the system pid limit. can be caused by fork bombs, runaway processes, or too many containers. identify runaway processes: `ps aux --sort=-%cpu | head`. set pid limits per pod: `resources.limits.ephemeral-storage`. increase system pid limits: `kernel.pid_max` sysctl. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Node PID Pressure</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Node</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The number of processes on the node is approaching the system PID limit. Can be caused by fork bombs, runaway processes, or too many containers.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Identify runaway processes: `ps aux --sort=-%cpu | head`. Set PID limits per pod: `resources.limits.ephemeral-storage`. Increase system PID limits: `kernel.pid_max` sysctl.</td>
+  
+</tr>
+<tr data-cat="node" data-search="networknotready node network not ready the cni (container network interface) plugin is not running or failed. pods cannot get ip addresses. check cni pod logs: `kubectl logs -n kube-system <cni-pod>`. restart the cni daemonset. verify cni binary is installed on the node at `/opt/cni/bin/`. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Node Network Not Ready</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Node</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The CNI (Container Network Interface) plugin is not running or failed. Pods cannot get IP addresses.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check CNI pod logs: `kubectl logs -n kube-system <cni-pod>`. Restart the CNI daemonset. Verify CNI binary is installed on the node at `/opt/cni/bin/`.</td>
+  
+</tr>
+<tr data-cat="deployment" data-search="deploymentprogressdeadlineexceeded deployment progress deadline exceeded the deployment did not make progress within `progressdeadlineseconds` (default: 600s). new pods are not becoming ready. check pod status: `kubectl get pods`. describe the deployment: `kubectl describe deployment <name>`. look for failed pod events. check image, resources, and readiness probes. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Deployment Progress Deadline Exceeded</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Deployment</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The deployment did not make progress within `progressDeadlineSeconds` (default: 600s). New pods are not becoming Ready.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check pod status: `kubectl get pods`. Describe the deployment: `kubectl describe deployment <name>`. Look for failed pod events. Check image, resources, and readiness probes.</td>
+  
+</tr>
+<tr data-cat="deployment" data-search="replicasetfailed replicaset failed to create pods the replicaset controller cannot create pods. common causes: resource quota exceeded, rbac missing, invalid pod spec. check replicaset events: `kubectl describe rs <name>`. check namespace resource quotas: `kubectl describe resourcequota -n <namespace>`. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">ReplicaSet Failed to Create Pods</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Deployment</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The ReplicaSet controller cannot create pods. Common causes: resource quota exceeded, RBAC missing, invalid pod spec.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check ReplicaSet events: `kubectl describe rs <name>`. Check namespace resource quotas: `kubectl describe resourcequota -n <namespace>`.</td>
+  
+</tr>
+<tr data-cat="scaling" data-search="horizontalpodautoscalerunabletoscale hpa cannot scale hpa cannot scale because: metrics server is not installed, the deployment is missing resource requests (required for cpu-based scaling), or max replicas is already reached. install metrics-server. set `resources.requests.cpu` on the container. check hpa status: `kubectl describe hpa <name>`. increase `maxreplicas` if needed. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">HPA Cannot Scale</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Scaling</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">HPA cannot scale because: metrics server is not installed, the deployment is missing resource requests (required for CPU-based scaling), or max replicas is already reached.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Install metrics-server. Set `resources.requests.cpu` on the container. Check HPA status: `kubectl describe hpa <name>`. Increase `maxReplicas` if needed.</td>
+  
+</tr>
+<tr data-cat="service" data-search="serviceendpointsnotready service has no endpoints the service selector does not match any running pod labels, or all matched pods are not ready. check endpoints: `kubectl get endpoints <service>`. verify pod labels match the service selector: `kubectl get pods --show-labels`. check pod readiness probes. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Service Has No Endpoints</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Service</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The Service selector does not match any running pod labels, or all matched pods are not Ready.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check endpoints: `kubectl get endpoints <service>`. Verify pod labels match the service selector: `kubectl get pods --show-labels`. Check pod readiness probes.</td>
+  
+</tr>
+<tr data-cat="service" data-search="serviceloadbalancerpending loadbalancer external ip pending a service of type loadbalancer has been created but no external ip is assigned. the cloud provider controller has not provisioned a load balancer. verify the cloud controller manager is running. check service events: `kubectl describe service <name>`. on local clusters (kind, minikube) use nodeport or a tool like metallb. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">LoadBalancer External IP Pending</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Service</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">A Service of type LoadBalancer has been created but no external IP is assigned. The cloud provider controller has not provisioned a load balancer.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Verify the cloud controller manager is running. Check service events: `kubectl describe service <name>`. On local clusters (kind, minikube) use NodePort or a tool like MetalLB.</td>
+  
+</tr>
+<tr data-cat="networking" data-search="ingressbackendnotfound ingress backend service not found the ingress resource references a backend service that does not exist or has the wrong port. verify the service name and port in the ingress spec match an existing service: `kubectl get svc -n <namespace>`. check ingress controller logs. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Ingress Backend Service Not Found</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Networking</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The Ingress resource references a backend Service that does not exist or has the wrong port.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Verify the service name and port in the Ingress spec match an existing Service: `kubectl get svc -n <namespace>`. Check ingress controller logs.</td>
+  
+</tr>
+<tr data-cat="networking" data-search="dnsresolutionfailure coredns resolution failure pods cannot resolve dns names. coredns may be crashed, misconfigured, or a network policy is blocking dns traffic. check coredns pods: `kubectl get pods -n kube-system -l k8s-app=kube-dns`. test dns from a pod: `kubectl exec <pod> -- nslookup kubernetes.default`. check networkpolicy for port 53 blocking. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">CoreDNS Resolution Failure</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Networking</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">Pods cannot resolve DNS names. CoreDNS may be crashed, misconfigured, or a network policy is blocking DNS traffic.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check CoreDNS pods: `kubectl get pods -n kube-system -l k8s-app=kube-dns`. Test DNS from a pod: `kubectl exec <pod> -- nslookup kubernetes.default`. Check NetworkPolicy for port 53 blocking.</td>
+  
+</tr>
+<tr data-cat="networking" data-search="networkpolicyblocking networkpolicy blocking traffic a networkpolicy is blocking traffic between pods or from pods to external services. once any networkpolicy selects a pod, all traffic not explicitly allowed is denied. review networkpolicy rules: `kubectl get networkpolicy -n <namespace>`. test with a temporary allow-all policy. use `kubectl describe networkpolicy` to see selectors and rules. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">NetworkPolicy Blocking Traffic</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Networking</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">A NetworkPolicy is blocking traffic between pods or from pods to external services. Once any NetworkPolicy selects a pod, all traffic not explicitly allowed is denied.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Review NetworkPolicy rules: `kubectl get networkpolicy -n <namespace>`. Test with a temporary allow-all policy. Use `kubectl describe networkpolicy` to see selectors and rules.</td>
+  
+</tr>
+<tr data-cat="storage" data-search="pvcpending persistentvolumeclaim stuck pending no persistentvolume matches the pvc (access mode, storage class, size). or the storageclass provisioner is not running. check pvc status: `kubectl describe pvc <name>`. list available pvs: `kubectl get pv`. verify storageclass exists and provisioner is running: `kubectl get storageclass`. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">PersistentVolumeClaim Stuck Pending</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Storage</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">No PersistentVolume matches the PVC (access mode, storage class, size). Or the StorageClass provisioner is not running.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check PVC status: `kubectl describe pvc <name>`. List available PVs: `kubectl get pv`. Verify StorageClass exists and provisioner is running: `kubectl get storageclass`.</td>
+  
+</tr>
+<tr data-cat="storage" data-search="pvclost persistentvolumeclaim lost the underlying persistentvolume was deleted or became unavailable while the claim was still in use. often caused by manually deleting pvs. this may result in data loss. restore the volume from backup if available. never manually delete pvs that are bound to pvcs. use `reclaimpolicy: retain` on storageclasses for critical data. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">PersistentVolumeClaim Lost</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Storage</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The underlying PersistentVolume was deleted or became unavailable while the claim was still in use. Often caused by manually deleting PVs.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">This may result in data loss. Restore the volume from backup if available. Never manually delete PVs that are bound to PVCs. Use `reclaimPolicy: Retain` on StorageClasses for critical data.</td>
+  
+</tr>
+<tr data-cat="configuration" data-search="secretnotfound secret not found a pod, deployment, or ingress references a secret that does not exist in the same namespace. create the missing secret: `kubectl create secret generic <name> --from-literal=key=value -n <namespace>`. verify namespace: `kubectl get secrets -n <namespace>`. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Secret Not Found</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Configuration</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">A pod, deployment, or ingress references a Secret that does not exist in the same namespace.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Create the missing secret: `kubectl create secret generic <name> --from-literal=key=value -n <namespace>`. Verify namespace: `kubectl get secrets -n <namespace>`.</td>
+  
+</tr>
+<tr data-cat="configuration" data-search="configmapnotfound configmap not found a pod spec references a configmap that does not exist in the same namespace. create the configmap: `kubectl create configmap <name> --from-file=config.yaml -n <namespace>`. use `kubectl get configmap -n <namespace>` to verify. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">ConfigMap Not Found</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Configuration</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">A pod spec references a ConfigMap that does not exist in the same namespace.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Create the ConfigMap: `kubectl create configmap <name> --from-file=config.yaml -n <namespace>`. Use `kubectl get configmap -n <namespace>` to verify.</td>
+  
+</tr>
+<tr data-cat="rbac" data-search="rbacforbidden rbac permission denied a pod or user is attempting an api action they do not have permission for. the serviceaccount lacks the required role or clusterrole binding. check rbac: `kubectl auth can-i <verb> <resource> --as=system:serviceaccount:<namespace>:<sa>`. create a role and rolebinding granting the required permissions. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">RBAC Permission Denied</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">RBAC</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">A pod or user is attempting an API action they do not have permission for. The ServiceAccount lacks the required Role or ClusterRole binding.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check RBAC: `kubectl auth can-i <verb> <resource> --as=system:serviceaccount:<namespace>:<sa>`. Create a Role and RoleBinding granting the required permissions.</td>
+  
+</tr>
+<tr data-cat="rbac" data-search="serviceaccountnotfound serviceaccount not found the pod spec references a serviceaccount that does not exist in the namespace. create the serviceaccount: `kubectl create serviceaccount <name> -n <namespace>`. or set `serviceaccountname: default` to use the default account. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">ServiceAccount Not Found</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">RBAC</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The pod spec references a ServiceAccount that does not exist in the namespace.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Create the ServiceAccount: `kubectl create serviceaccount <name> -n <namespace>`. Or set `serviceAccountName: default` to use the default account.</td>
+  
+</tr>
+<tr data-cat="security" data-search="podsecuritypolicyviolation pod security admission violation the pod spec violates the pod security standards policy enforced on the namespace (e.g. requesting privileged mode, hostnetwork, or running as root in a restricted namespace). check namespace labels: `kubectl get namespace <ns> --show-labels`. adjust pod spec to comply with the policy (remove privileged, set runasnonroot, set seccompprofile). or relax the namespace policy. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Pod Security Admission Violation</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Security</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The pod spec violates the Pod Security Standards policy enforced on the namespace (e.g. requesting privileged mode, hostNetwork, or running as root in a restricted namespace).</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check namespace labels: `kubectl get namespace <ns> --show-labels`. Adjust pod spec to comply with the policy (remove privileged, set runAsNonRoot, set seccompProfile). Or relax the namespace policy.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="readinessprobefailure readiness probe failing the readiness probe is failing, so the pod is excluded from service endpoints. the container is running but not passing health checks. check probe configuration in `kubectl describe pod`. test the probe endpoint manually from inside the pod: `kubectl exec <pod> -- curl localhost:<port>/health`. increase `initialdelayseconds` if the app takes time to start. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Readiness Probe Failing</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The readiness probe is failing, so the pod is excluded from Service endpoints. The container is running but not passing health checks.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check probe configuration in `kubectl describe pod`. Test the probe endpoint manually from inside the pod: `kubectl exec <pod> -- curl localhost:<port>/health`. Increase `initialDelaySeconds` if the app takes time to start.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="livenessprobefailure liveness probe failing the liveness probe is failing, causing kubernetes to restart the container. the application may have deadlocked or stopped responding. inspect pod events: `kubectl describe pod`. check if the probe threshold is too aggressive. test the probe endpoint: `kubectl exec <pod> -- curl localhost:<port>/live`. increase `failurethreshold` or `timeoutseconds`. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Liveness Probe Failing</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The liveness probe is failing, causing Kubernetes to restart the container. The application may have deadlocked or stopped responding.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Inspect pod events: `kubectl describe pod`. Check if the probe threshold is too aggressive. Test the probe endpoint: `kubectl exec <pod> -- curl localhost:<port>/live`. Increase `failureThreshold` or `timeoutSeconds`.</td>
+  
+</tr>
+<tr data-cat="pod" data-search="startupprobefailure startup probe failing the startup probe did not succeed within `failurethreshold * periodseconds`. kubernetes kills the container before it finishes initializing. increase `failurethreshold` or `periodseconds` on the startup probe to give the app more time. check application startup logs: `kubectl logs <pod>`. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Startup Probe Failing</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Pod</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The startup probe did not succeed within `failureThreshold * periodSeconds`. Kubernetes kills the container before it finishes initializing.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Increase `failureThreshold` or `periodSeconds` on the startup probe to give the app more time. Check application startup logs: `kubectl logs <pod>`.</td>
+  
+</tr>
+<tr data-cat="configuration" data-search="resourcequotaexceeded resource quota exceeded creating or updating resources in the namespace would exceed the configured resourcequota (cpu, memory, pod count, service count, etc.). check quota usage: `kubectl describe resourcequota -n <namespace>`. delete unused resources or increase quota. ensure all pods have resource requests set (required for quota enforcement). ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Resource Quota Exceeded</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Configuration</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">Creating or updating resources in the namespace would exceed the configured ResourceQuota (CPU, memory, pod count, service count, etc.).</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check quota usage: `kubectl describe resourcequota -n <namespace>`. Delete unused resources or increase quota. Ensure all pods have resource requests set (required for quota enforcement).</td>
+  
+</tr>
+<tr data-cat="configuration" data-search="limitrangeviolation limitrange violation a pod or container is requesting resources outside the range defined by a limitrange in the namespace. check limitrange: `kubectl describe limitrange -n <namespace>`. adjust container resource requests and limits to fall within the defined min/max values. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">LimitRange Violation</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Configuration</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">A pod or container is requesting resources outside the range defined by a LimitRange in the namespace.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check LimitRange: `kubectl describe limitrange -n <namespace>`. Adjust container resource requests and limits to fall within the defined min/max values.</td>
+  
+</tr>
+<tr data-cat="statefulset" data-search="statefulsetrollingupdatestuck statefulset rolling update stuck a statefulset rolling update is stuck because a pod is not becoming ready (often due to pvc issues, readiness probe failures, or anti-affinity blocking scheduling). check the stuck pod: `kubectl describe pod <statefulset>-<ordinal>`. statefulsets update in reverse ordinal order and will not proceed past a stuck pod. fix the underlying pod issue. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">StatefulSet Rolling Update Stuck</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">StatefulSet</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">A StatefulSet rolling update is stuck because a pod is not becoming Ready (often due to PVC issues, readiness probe failures, or anti-affinity blocking scheduling).</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check the stuck pod: `kubectl describe pod <statefulset>-<ordinal>`. StatefulSets update in reverse ordinal order and will not proceed past a stuck pod. Fix the underlying pod issue.</td>
+  
+</tr>
+<tr data-cat="job" data-search="jobbackofflimitexceeded job backoff limit exceeded all job pods failed and the retry limit (`backofflimit`) has been reached. kubernetes stops retrying. check failed pod logs: `kubectl logs <job-pod>`. fix the underlying issue and recreate the job. increase `backofflimit` if transient failures are expected. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Job Backoff Limit Exceeded</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Job</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">All Job pods failed and the retry limit (`backoffLimit`) has been reached. Kubernetes stops retrying.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check failed pod logs: `kubectl logs <job-pod>`. Fix the underlying issue and recreate the Job. Increase `backoffLimit` if transient failures are expected.</td>
+  
+</tr>
+<tr data-cat="cronjob" data-search="cronjobmissed cronjob missed schedule the cronjob missed its scheduled execution window. this can happen if the controller was down or if a previous job run took longer than the scheduled interval. check `startingdeadlineseconds` on the cronjob. set `concurrencypolicy: forbid` to prevent overlapping runs. verify the cronjob schedule with a cron expression validator. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">CronJob Missed Schedule</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">CronJob</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The CronJob missed its scheduled execution window. This can happen if the controller was down or if a previous job run took longer than the scheduled interval.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check `startingDeadlineSeconds` on the CronJob. Set `concurrencyPolicy: Forbid` to prevent overlapping runs. Verify the CronJob schedule with a cron expression validator.</td>
+  
+</tr>
+<tr data-cat="networking" data-search="ingresstlscertnotfound ingress tls certificate secret not found the ingress tls section references a secret that does not exist or has not yet been provisioned by cert-manager. check cert-manager certificate resources: `kubectl get certificate -n <namespace>`. describe the certificate to see provisioning errors. manually create the secret if cert-manager is not being used. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">Ingress TLS Certificate Secret Not Found</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Networking</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The Ingress TLS section references a Secret that does not exist or has not yet been provisioned by cert-manager.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check cert-manager Certificate resources: `kubectl get certificate -n <namespace>`. Describe the Certificate to see provisioning errors. Manually create the Secret if cert-manager is not being used.</td>
+  
+</tr>
+<tr data-cat="control plane" data-search="etcdquorumlost etcd quorum lost more than half of etcd members are unavailable, causing the cluster to become read-only. the api server cannot write state. this is a critical control plane failure. restore etcd from a snapshot. for a 3-node cluster, losing 2 nodes loses quorum. always run etcd with an odd number of members (3 or 5). ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">etcd Quorum Lost</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Control Plane</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">More than half of etcd members are unavailable, causing the cluster to become read-only. The API server cannot write state.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">This is a critical control plane failure. Restore etcd from a snapshot. For a 3-node cluster, losing 2 nodes loses quorum. Always run etcd with an odd number of members (3 or 5).</td>
+  
+</tr>
+<tr data-cat="control plane" data-search="apiserverunreachable api server unreachable the kubernetes api server is down or unreachable. kubectl commands fail with connection refused or timeout errors. check api server pod: `kubectl get pods -n kube-system` (if possible). ssh to control plane node: `docker ps | grep apiserver` or `crictl ps | grep apiserver`. check logs and restart if needed. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">API Server Unreachable</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Control Plane</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The Kubernetes API server is down or unreachable. kubectl commands fail with connection refused or timeout errors.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check API server pod: `kubectl get pods -n kube-system` (if possible). SSH to control plane node: `docker ps | grep apiserver` or `crictl ps | grep apiserver`. Check logs and restart if needed.</td>
+  
+</tr>
+<tr data-cat="control plane" data-search="schedulerunhealthy kube-scheduler unhealthy the scheduler pod is crashed or leader election failed. new pods will stay in pending state indefinitely. check scheduler pod: `kubectl get pods -n kube-system -l component=kube-scheduler`. restart the scheduler pod. check leader election: `kubectl get lease -n kube-system`. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">kube-scheduler Unhealthy</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Control Plane</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The scheduler pod is crashed or leader election failed. New pods will stay in Pending state indefinitely.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check scheduler pod: `kubectl get pods -n kube-system -l component=kube-scheduler`. Restart the scheduler pod. Check leader election: `kubectl get lease -n kube-system`.</td>
+  
+</tr>
+<tr data-cat="control plane" data-search="controllermanagerunhealthy kube-controller-manager unhealthy the controller manager is not running. deployments, replicasets, daemonsets, and jobs will not reconcile. check controller-manager pod: `kubectl get pods -n kube-system -l component=kube-controller-manager`. restart the pod. check logs for certificate or rbac issues. ">
+  <td style="white-space:nowrap">
+    
+    <span style="font-size:12px;font-weight:700;color:#D4A843">kube-controller-manager Unhealthy</span>
+  </td>
+  <td><span style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);white-space:nowrap">Control Plane</span></td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">The controller manager is not running. Deployments, ReplicaSets, DaemonSets, and Jobs will not reconcile.</td>
+  <td style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5">Check controller-manager pod: `kubectl get pods -n kube-system -l component=kube-controller-manager`. Restart the pod. Check logs for certificate or RBAC issues.</td>
+  
+</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="padding-top:0">
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;background:rgba(212,168,67,0.05);border-color:rgba(212,168,67,0.2)">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#D4A843;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Need expert help?</div>
+      <div style="font-size:18px;font-weight:800;color:#fff">Kubernetes and Cloud Services</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.45);margin-top:4px">Architecture review, debugging, and production support</div>
+    </div>
+    <a class="btn-primary" href="https://swifttechco.com/services/digital/hosting-maintenance" target="_blank" rel="noopener">Talk to a specialist &rarr;</a>
+  </div>
+</div>
+
+
+<footer>
+  <p>This page is the open-source data backing the full comparison article.</p>
+  <p style="margin-top:8px">
+    <a href="https://swifttechco.com/services/digital/hosting-maintenance" target="_blank" rel="noopener">Read the full analysis at swifttechco.com &rarr;</a>
+    &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+    <a href="https://swifttechco.com" target="_blank" rel="noopener">Swift Tech Co.</a>
+  </p>
+</footer>
+
+<script>
+let activeCat = "all";
+function rows() { return document.querySelectorAll("#errorBody tr"); }
+function doSearch() {
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  let visible = 0;
+  rows().forEach(r => {
+    const matchCat = activeCat === "all" || r.dataset.cat === activeCat;
+    const matchQ   = !q || r.dataset.search.includes(q);
+    r.style.display = matchCat && matchQ ? "" : "none";
+    if (matchCat && matchQ) visible++;
+  });
+  document.getElementById("countLabel").textContent = visible + " errors";
+}
+function filterCat(btn) {
+  activeCat = btn.dataset.cat;
+  document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  doSearch();
+}
+</script>
+</body>
+</html>
