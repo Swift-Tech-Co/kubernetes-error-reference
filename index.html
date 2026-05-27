@@ -59,6 +59,68 @@ footer a{color:#D4A843}
 code{font-family:"JetBrains Mono",monospace;font-size:11px;background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;color:rgba(255,255,255,0.7)}
 .count{font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:16px}
 </style>
+
+    <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Swift Tech Co.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@SwiftTechCo">
+  <meta name="twitter:title" content="Kubernetes Error Reference">
+  <meta name="twitter:description" content="Fix Kubernetes errors: CrashLoopBackOff, ImagePullBackOff, OOMKilled, Pending pods.">
+  <meta name="author" content="Swift Tech Co.">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Kubernetes Error Reference",
+  "description": "Kubernetes error reference with fixes for CrashLoopBackOff, ImagePullBackOff, OOMKilled, Pending pods, and kubectl errors.",
+  "url": "https://swift-tech-co.github.io/kubernetes-error-reference/",
+  "author": {
+    "@type": "Organization",
+    "name": "Swift Tech Co.",
+    "url": "https://swifttechco.com"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Swift Tech Co.",
+    "url": "https://swifttechco.com"
+  },
+  "datePublished": "2026-05-26",
+  "dateModified": "2026-05-27"
+}
+  </script>
+  <script type="application/ld+json">
+  {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What causes Kubernetes CrashLoopBackOff?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A container keeps crashing and Kubernetes restarts it with exponential backoff. Common causes: application crash on startup (check kubectl logs POD --previous), misconfigured env vars or secrets, failed liveness probe, or missing dependencies. Check kubectl describe pod POD_NAME for events."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I fix Kubernetes ImagePullBackOff?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Causes: (1) incorrect image name or tag, (2) private registry credentials missing - create an imagePullSecret, (3) Docker Hub rate limiting - authenticate with a Docker Hub account, (4) image does not exist - verify with docker pull locally first."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What does OOMKilled mean in Kubernetes?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The container exceeded its memory limit and the OOM killer terminated it. Fix: check actual usage with kubectl top pod, increase memory limit in resources.limits.memory, investigate memory leaks, and always set both requests and limits in production."
+      }
+    }
+  ]
+}
+  </script>
 </head>
 <body>
 
@@ -568,6 +630,23 @@ code{font-family:"JetBrains Mono",monospace;font-size:11px;background:rgba(255,2
 </div>
 
 
+
+<section style="max-width:760px;margin:0 auto 48px;padding:0 24px">
+  <h2 style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#fff;margin-bottom:4px;padding-bottom:16px;border-bottom:1px solid rgba(212,168,67,0.2)">Frequently Asked Questions</h2>
+  
+    <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:20px 0">
+      <h3 style="font-family:'Playfair Display',serif;font-size:17px;color:#fff;margin-bottom:10px">What causes Kubernetes CrashLoopBackOff?</h3>
+      <p style="font-size:14px;color:#a8a8b3;line-height:1.8">A container keeps crashing and Kubernetes restarts it with exponential backoff. Common causes: application crash on startup (check kubectl logs POD --previous), misconfigured env vars or secrets, failed liveness probe, or missing dependencies. Check kubectl describe pod POD_NAME for events.</p>
+    </div>
+    <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:20px 0">
+      <h3 style="font-family:'Playfair Display',serif;font-size:17px;color:#fff;margin-bottom:10px">How do I fix Kubernetes ImagePullBackOff?</h3>
+      <p style="font-size:14px;color:#a8a8b3;line-height:1.8">Causes: (1) incorrect image name or tag, (2) private registry credentials missing - create an imagePullSecret, (3) Docker Hub rate limiting - authenticate with a Docker Hub account, (4) image does not exist - verify with docker pull locally first.</p>
+    </div>
+    <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:20px 0">
+      <h3 style="font-family:'Playfair Display',serif;font-size:17px;color:#fff;margin-bottom:10px">What does OOMKilled mean in Kubernetes?</h3>
+      <p style="font-size:14px;color:#a8a8b3;line-height:1.8">The container exceeded its memory limit and the OOM killer terminated it. Fix: check actual usage with kubectl top pod, increase memory limit in resources.limits.memory, investigate memory leaks, and always set both requests and limits in production.</p>
+    </div>
+</section>
 <footer>
   <p>This page is the open-source data backing the full comparison article.</p>
   <p style="margin-top:8px">
